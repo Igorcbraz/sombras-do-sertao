@@ -11,23 +11,29 @@
 struct BulletProtagonista bullets_protagonista[BULLETS_PROTAGONISTA_COUNT];
 struct Protagonista *protagonista;
 
-void setupProtagonista() {
-  protagonista = malloc(sizeof(struct Protagonista));
+void setupProtagonista(int stage) {
+  if (!protagonista) {
+    protagonista = malloc(sizeof(struct Protagonista));
+    protagonista->width = 250;
+    protagonista->height = 330;
+    protagonista->speed = 20;
+    protagonista->direction = 1;
+    protagonista->lives = 3;
+    protagonista->score = 0;
+    protagonista->stageX = 20;
+    protagonista->estagioAtual = 4; 
+    protagonista->last_shoot = 0;
+    protagonista->image = al_load_bitmap("assets/images/characters/protagonista.png");
+    protagonista->image_bullet = al_load_bitmap("assets/images/addons/ammo.png");
+  }
+  if (stage > protagonista->estagioAtual) {
+    protagonista->estagioAtual = stage;
+  }
+  printf("Stage: %d\n", protagonista->estagioAtual);
 
   protagonista->x = 20;
   protagonista->y = HEIGHT_SCREEN / 2;
-  protagonista->width = 250;
-  protagonista->height = 330;
-  protagonista->speed = 20;
-  protagonista->direction = 1;
-  protagonista->lives = 3;
-  protagonista->score = 0;
-  protagonista->stageX = 20;
-  protagonista->estagioAtual = 0;
-  protagonista->last_shoot = 0;
   protagonista->bullets = 3;
-  protagonista->image = al_load_bitmap("assets/images/characters/protagonista.png");
-  protagonista->image_bullet = al_load_bitmap("assets/images/addons/ammo.png");
 }
 
 void drawProtagonista() {

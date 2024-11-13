@@ -1,13 +1,17 @@
-#include <allegro5/allegro_primitives.h>
 #include "../headers/screens.h"
 #include "../headers/helper.h"
 #include "../headers/protagonista.h"
 #include "../headers/enemies.h"
+#include <stdbool.h>
 #include <allegro5/allegro_image.h>
-#include <stdio.h>
+#include <allegro5/allegro_primitives.h>
 
 ALLEGRO_BITMAP *bg_map;
 struct MapProtagonista *MAPA_PROTAGONISTA;
+typedef struct {
+  int stageNumber;
+  int gameState;
+} StageMapping;
 
 void setupMap() {
   bg_map = al_load_bitmap("assets/images/background/bg_map.jpg");
@@ -33,7 +37,7 @@ void destroyMapProtagonista() {
 void passFrame() {
   al_rest(0.001);
   al_draw_bitmap(bg_map, 0, 0, 0);
-  drawMapProtagonista(MAPA_PROTAGONISTA);
+  drawMapProtagonista();
   al_flip_display();
 }
 
@@ -101,6 +105,33 @@ void protagonistaMovement(int finalX, int finalY) {
       }
     }
   }
+}
+
+void setupStage(int newState, int nextStage) {
+  if (protagonista->estagioAtual >= newState) {
+    setupProtagonista(nextStage);
+    setupEnemies();
+    GAME_INFO->state = newState;
+  }
+}
+
+int getGameStageByMapStage(int stageNumber) {
+  StageMapping stageMappings[] = {
+    {0, STAGE_1},
+    {2, STAGE_2},
+    {4, STAGE_3},
+    {6, STAGE_4},
+    {8, STAGE_5}
+  };
+
+  int numMappings = sizeof(stageMappings) / sizeof(StageMapping);
+  for (int i = 0; i < numMappings; i++) {
+    if (stageMappings[i].stageNumber == stageNumber) {
+      return stageMappings[i].gameState;
+    }
+  }
+
+  return -1; 
 }
 
 void protagonistaMapMovement() {
@@ -187,34 +218,10 @@ void protagonistaMapMovement() {
         break;
     }
   } else if (al_key_down(&GAME_INFO->key_state, ALLEGRO_KEY_ENTER)) {
-    switch (MAPA_PROTAGONISTA->stage) {
-    case 0:
-      setupProtagonista();
-      setupEnemies(); 
-      GAME_INFO->state = STAGE_1;
-      break;
-    case 2:
-      setupProtagonista();
-      setupEnemies(); 
-      GAME_INFO->state = STAGE_2;
-      break;
-    case 4:
-      setupProtagonista();
-      setupEnemies(); 
-      GAME_INFO->state = STAGE_3;
-      break;
-    case 6:
-      setupProtagonista();
-      setupEnemies(); 
-      GAME_INFO->state = STAGE_4;
-      break;
-    case 8:     
-      setupProtagonista();
-      setupEnemies(); 
-      GAME_INFO->state = STAGE_5;
-      break;
-    default:
-      break;  
+    int gameStage = getGameStageByMapStage(MAPA_PROTAGONISTA->stage);
+    if (gameStage != -1) {
+      int nextStage = gameStage + 1;
+      setupStage(gameStage, nextStage);
     }
   }
 }
